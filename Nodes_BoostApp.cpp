@@ -1,61 +1,12 @@
 #include "cinder/app/AppNative.h"
 #include "cinder/gl/gl.h"
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/visitors.hpp>
-#include <boost/graph/breadth_first_search.hpp>
+#include "Nodes.h"
 
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
-using namespace boost;
-
-
-struct PointNode
-	{
-
-	PointNode(const Vec2f &position, const string &nodeName, Color col = Color::white()) {
-		pos = position;
-		color = col;
-		name = nodeName;
-
-		}
-	Vec2f pos;
-	Color color;
-	string name;
-	adjacency_list<>::vertex_descriptor vrtx;
-
-	};
-
-
-
-
-class nVertex
-	{
-	public:
-		PointNode *pNode;
-
-	};
-
-class nEdge
-	{
-	public:
-
-
-	};
-
-class nGraph
-	{
-	public:
-
-
-	};
-
-typedef boost::adjacency_list <	boost::vecS, boost::vecS, boost::directedS, nVertex, nEdge, nGraph > graph_t;
-typedef boost::graph_traits<graph_t>::vertex_descriptor vertex_t;
-typedef adjacency_list<>::vertex_iterator iter;
-
 
 class Nodes_BoostApp : public AppNative
 	{
@@ -67,9 +18,11 @@ class Nodes_BoostApp : public AppNative
 		void prepareSettings(Settings *settings);
 		void keyUp(KeyEvent event);
 
-		graph_t myGraph;
+		nodeGraph myGraph;
 
 		PointNode *p1, *p2, *p3, *p4;
+
+		Nodes mNodes;
 	};
 
 void Nodes_BoostApp::prepareSettings(Settings *settings) {
@@ -83,16 +36,16 @@ void Nodes_BoostApp::setup() {
 	PointNode *p3 = new PointNode(Vec2f(400, 200), "node 3");
 	PointNode *p4 = new PointNode(Vec2f(250, 250), "node 4");
 
-	vertex_t v1 = add_vertex(myGraph);
+	nodeVertex v1 = add_vertex(myGraph);
 	myGraph[v1].pNode = p1;
 
-	vertex_t v2 = add_vertex(myGraph);
+	nodeVertex v2 = add_vertex(myGraph);
 	myGraph[v2].pNode = p2;
 
-	vertex_t v3 = add_vertex(myGraph);
+	nodeVertex v3 = add_vertex(myGraph);
 	myGraph[v3].pNode = p3;
 
-	vertex_t v4 = add_vertex(myGraph);
+	nodeVertex v4 = add_vertex(myGraph);
 	myGraph[v4].pNode = p4;
 
 
@@ -101,7 +54,7 @@ void Nodes_BoostApp::setup() {
 	add_edge(v2, v4, myGraph);
 	add_edge(v3, v4, myGraph);
 
-	pair<iter, iter> p = vertices(myGraph);
+	pair<nodeIterator, nodeIterator> p = vertices(myGraph);
 
 	for (auto it = p.first; it != p.second; it++) {
 		cout << *it << "\t" << typeid(*it).name() << endl;
@@ -127,23 +80,20 @@ void Nodes_BoostApp::update() {}
 
 void Nodes_BoostApp::draw() {
 	// clear out the window with black
-	gl::clear(Color(0, 0, 0));
+	gl::clear(Color::white());
 
-
+	gl::color(Color::black());
 	auto i = edges(myGraph);
 	for (auto it = i.first; it != i.second; it++) {
 		gl::drawLine(myGraph[source(*it, myGraph)].pNode->pos, myGraph[target(*it, myGraph)].pNode->pos);
 		}
 
-
-	pair<iter, iter> p = vertices(myGraph);
+	pair<nodeIterator, nodeIterator> p = vertices(myGraph);
 
 	for (auto it = p.first; it != p.second; it++) {
 		gl::drawSolidCircle(myGraph[*it].pNode->pos, 10);
-		gl::drawStringCentered(myGraph[*it].pNode->name, myGraph[*it].pNode->pos, Color("red"));
+		gl::drawStringCentered(myGraph[*it].pNode->name, myGraph[*it].pNode->pos + Vec2f(-30, -30), Color("red"));
 		}
-
-
 
 	}
 
