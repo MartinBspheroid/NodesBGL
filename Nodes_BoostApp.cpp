@@ -1,6 +1,8 @@
 #include "cinder/app/AppNative.h"
 #include "cinder/gl/gl.h"
 
+#include "cinder/Rand.h"
+
 #include "Nodes.h"
 
 
@@ -31,6 +33,11 @@ void Nodes_BoostApp::prepareSettings(Settings *settings) {
 
 void Nodes_BoostApp::setup() {
 
+
+	mNodes.addNode(Vec2f(50, 50), "new Node");
+	mNodes.addNode(Vec2f(100, 75), "new Node2");
+
+
 	PointNode *p1 = new PointNode(Vec2f(100, 100), "node 1");
 	PointNode *p2 = new PointNode(Vec2f(200, 300), "node 2");
 	PointNode *p3 = new PointNode(Vec2f(400, 200), "node 3");
@@ -48,7 +55,6 @@ void Nodes_BoostApp::setup() {
 	nodeVertex v4 = add_vertex(myGraph);
 	myGraph[v4].pNode = p4;
 
-
 	add_edge(v1, v2, myGraph);
 	add_edge(v1, v3, myGraph);
 	add_edge(v2, v4, myGraph);
@@ -59,7 +65,6 @@ void Nodes_BoostApp::setup() {
 	for (auto it = p.first; it != p.second; it++) {
 		cout << *it << "\t" << typeid(*it).name() << endl;
 		cout << myGraph[*it].pNode->name << endl;
-
 		}
 
 	auto i = edges(myGraph);
@@ -76,11 +81,18 @@ void Nodes_BoostApp::setup() {
 
 void Nodes_BoostApp::mouseDown(MouseEvent event) {}
 
-void Nodes_BoostApp::update() {}
+void Nodes_BoostApp::update() {
+	
+	
+	}
 
 void Nodes_BoostApp::draw() {
 	// clear out the window with black
 	gl::clear(Color::white());
+
+
+	mNodes.draw();
+
 
 	gl::color(Color::black());
 	auto i = edges(myGraph);
@@ -102,6 +114,12 @@ void Nodes_BoostApp::keyUp(KeyEvent event) {
 	switch (event.getCode()) {
 		case KeyEvent::KEY_ESCAPE:
 			quit();
+			break;
+		case KeyEvent::KEY_i:
+			mNodes.printInfos();
+			break;
+		case KeyEvent::KEY_RETURN:
+			mNodes.addNode(Vec2f(Rand::randFloat(getWindowWidth()), Rand::randFloat(getWindowWidth())), "teh new dude");
 			break;
 		default:
 			break;

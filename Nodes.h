@@ -65,16 +65,17 @@ class Nodes
 		void draw();
 		void generateNew() {}
 
-		void addNode(const ci::Vec2f &position, std::string &nodeName);
+		void addNode(const ci::Vec2f &position, std::string nodeName);
 
 		void addEdge(const nodeVertex& input, const nodeVertex& output) {
 			add_edge(input, output, mNodeGraph);
 			}
 		void removeNode() {}
 		void removeEdge() {}
+		void printInfos();
 	private:
 
 		nodeGraph mNodeGraph;
-		std::vector<PointNode> mNodes;
+		std::vector<PointNode*> mNodes;
 		std::vector<nodeVertex> mVertices;
 	};
