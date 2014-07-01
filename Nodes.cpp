@@ -24,23 +24,21 @@ void Nodes::draw() {
 	auto i = edges(mNodeGraph);
 
 	for (auto it = i.first; it != i.second; it++) {
-		gl::drawLine(mNodeGraph[source(*it, mNodeGraph)].pNode->pos, mNodeGraph[target(*it, mNodeGraph)].pNode->pos);
+		gl::drawLine(mNodeGraph[source(*it, mNodeGraph)].pNode->outPoint, mNodeGraph[target(*it, mNodeGraph)].pNode->inPoint);
 		}
 
 	pair<nodeIterator, nodeIterator> p = vertices(mNodeGraph);
 
 	for (auto it = p.first; it != p.second; it++) {
-		gl::color(mNodeGraph[*it].pNode->color);
-		gl::drawSolidCircle(mNodeGraph[*it].pNode->pos, 10);
-		gl::drawStringCentered(mNodeGraph[*it].pNode->name, mNodeGraph[*it].pNode->pos + Vec2f(-30, -30), Color("black"));
-
+		mNodeGraph[*it].pNode->draw();
+		
 		}
 	}
 
 void Nodes::addNode(const Vec2f &position, std::string nodeName) {
 
 
-	PointNode *w = new PointNode(position, nodeName, Color(1, 1, 0));
+	BaseNode *w = new BaseNode(position, nodeName, Color(1, 1, 0));
 	nodeVertex v = add_vertex(mNodeGraph);
 	mNodeGraph[v].pNode = w;
 	mNodeGraph[v].id = nodeCount;
@@ -55,7 +53,6 @@ void Nodes::addNode(const Vec2f &position, std::string nodeName) {
 void Nodes::printInfos() {
 
 	cout << "\tGraph\n" << "Vertices: " << mNodeGraph.vertex_set().size() << endl;
-
 
 	pair<nodeIterator, nodeIterator> p = vertices(mNodeGraph);
 	for (auto it = p.first; it != p.second; it++) {
@@ -75,8 +72,9 @@ void Nodes::addEdge(const int& input, const int& output) {
 
 void Nodes::onMouseDown(MouseEvent event) {
 
-	if (bHitNode && event.isLeftDown()) {
+	if (bHitNode && event.isRight()) {
 		bDraggingConnection = true;
+		bDraggingNode = false;
 		/*draggingPos.first = event.getPos();
 		draggingPos.second = event.getPos();*/
 
@@ -84,8 +82,9 @@ void Nodes::onMouseDown(MouseEvent event) {
 		draggingPos.second = mNodeGraph[connectNodes.first].pNode->pos;
 
 		}
-	if (bHitNode && event.isRightDown()) {
+	if (bHitNode && event.isLeftDown()) {
 		bDraggingNode = true;
+		bDraggingConnection = false;
 		}
 	if ((event.isRight() && event.isShiftDown()) || event.isMiddleDown()) {
 
@@ -101,12 +100,12 @@ void Nodes::onMouseDown(MouseEvent event) {
 	}
 
 void Nodes::onMouseDragged(MouseEvent event) {
-	if (bDraggingConnection && event.isLeftDown()) {
+	if (bDraggingConnection && event.isRightDown()) {
 		draggingPos.second = event.getPos();
 
 		}
-	if (bDraggingNode && event.isRightDown()) {
-		mNodeGraph[selectedNode].pNode->pos = event.getPos();
+	if (bDraggingNode && event.isLeftDown()) {
+		mNodeGraph[selectedNode].pNode->move(event.getPos());
 		}
 
 	if ((event.isRightDown() && event.isShiftDown()) || event.isMiddleDown()) {
@@ -114,19 +113,19 @@ void Nodes::onMouseDragged(MouseEvent event) {
 		pair<nodeIterator, nodeIterator> p = vertices(mNodeGraph);
 		for (auto it = p.first; it != p.second; it++) {
 
-			mNodeGraph[*it].pNode->pos += translateOffset;
+			mNodeGraph[*it].pNode->translate(translateOffset);
 			}
 		translateOffset = event.getPos();
 		}
 	}
 
 void Nodes::onMouseUp(MouseEvent event) {
-	if (bDraggingConnection && event.isLeft()) {
+	if (bDraggingConnection && event.isRight()) {
 
 		pair<nodeIterator, nodeIterator> p = vertices(mNodeGraph);
 		int NodeCounter = 0;
 		for (auto it = p.first; it != p.second; it++) {
-			if (mNodeGraph[*it].pNode->pos.distance(event.getPos()) < 10.0f) {
+			if (mNodeGraph[*it].pNode->nodeBox.contains(event.getPos())) {
 
 				connectNodes.second = NodeCounter;
 
@@ -136,7 +135,7 @@ void Nodes::onMouseUp(MouseEvent event) {
 				break;
 				}
 			else {
-				mNodeGraph[*it].pNode->color = Color("teal");
+				mNodeGraph[*it].pNode->color = Color("light gray");
 				bHitNode = false;
 
 				NodeCounter++;
@@ -144,7 +143,7 @@ void Nodes::onMouseUp(MouseEvent event) {
 			}
 		bDraggingConnection = false;
 		}
-	if (bDraggingNode && event.isRight()) {
+	if (bDraggingNode && event.isLeft()) {
 		bDraggingNode = false;
 		}
 	translateOffset = Vec2i::zero();
@@ -157,13 +156,13 @@ void Nodes::onMouseMoved(MouseEvent event) {
 	pair<nodeIterator, nodeIterator> p = vertices(mNodeGraph);
 
 	for (auto it = p.first; it != p.second; it++) {
-		if (mNodeGraph[*it].pNode->pos.distance(event.getPos()) < 10.0f) {
+		if (mNodeGraph[*it].pNode->nodeBox.contains(event.getPos())) {
 
 
 
 			bHitNode = true;
 
-			mNodeGraph[*it].pNode->color = Color("yellow");
+			mNodeGraph[*it].pNode->color = Color("orange");
 			connectNodes.first = selectedNode = NodeCounter;
 			break;
 			}

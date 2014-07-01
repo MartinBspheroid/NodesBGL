@@ -16,25 +16,49 @@ using namespace boost;
 
 
 
-struct PointNode
+class BaseNode
 	{
-
-	PointNode(const ci::Vec2f &position, const std::string &nodeName, ci::Color col = ci::Color::white()) {
+	public:
+	BaseNode(const ci::Vec2f &position, const std::string &nodeName, ci::Color col = ci::Color::white()) {
 		pos = position;
 		color = col;
 		name = nodeName;
-
+		nodeBox = ci::Rectf(pos + ci::Vec2f(-30, -15), pos + ci::Vec2f(30, 15));
+		updatePoints();
 		}
-	ci::Vec2f pos;
+
+	void translate(const ci::Vec2f &offset) {
+
+		pos += offset;
+		nodeBox.offset(offset);
+		updatePoints();
+		}
+
+	void move(const ci::Vec2f &position) {
+		pos = position;
+		nodeBox.offset(pos - nodeBox.getCenter() );
+		updatePoints();
+		}
+	void draw() {
+		ci::gl::color(color);
+		ci::gl::drawSolidRoundedRect(nodeBox, 5);
+		//ci::gl::drawSolidRect(nodeBox);
+		ci::gl::drawStringCentered(name, pos, ci::Color("black"));
+		}
+	ci::Vec2f pos, inPoint, outPoint;
 	ci::Color color;
 	std::string name;
-
+	ci::Rectf nodeBox;
+	void updatePoints() {
+		inPoint = ci::Vec2f(nodeBox.getLowerLeft().x, nodeBox.getCenter().y);
+		outPoint = ci::Vec2f(nodeBox.getLowerRight().x, nodeBox.getCenter().y);
+		}
 	};
 
 class n_Vertex
 	{
 	public:
-		PointNode *pNode;
+		BaseNode *pNode;
 		int id;
 
 	};
@@ -78,7 +102,7 @@ class Nodes
 	private:
 
 		nodeGraph mNodeGraph;
-		std::vector<PointNode*> mNodes;
+		std::vector<BaseNode*> mNodes;
 		std::vector<nodeVertex> mVertices;
 
 		boost::signals2::scoped_connection mMouseBeganCallBack,
@@ -99,7 +123,7 @@ class Nodes
 		int selectedNode;
 		std::pair<int, int> connectNodes;
 		ci::Vec2i translateOffset;
-
+		
 		double tDoubleClick;
 		int nodeCount;
 
