@@ -4,7 +4,7 @@
 #include "cinder/Rand.h"
 
 #include "Nodes.h"
-
+#include "cinder/params/Params.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -21,6 +21,8 @@ class Nodes_BoostApp : public AppNative
 		void keyUp(KeyEvent event);
 
 		Nodes mNodes;
+
+		params::InterfaceGlRef gui;
 	};
 
 void Nodes_BoostApp::prepareSettings(Settings *settings) {
@@ -28,7 +30,9 @@ void Nodes_BoostApp::prepareSettings(Settings *settings) {
 	}
 
 void Nodes_BoostApp::setup() {
-
+	gui = params::InterfaceGl::create("Nodes", Vec2i(200, 200));
+	
+	gui->addParam("Draw topology", &mNodes.bDrawTopology);
 	mNodes.init();
 
 	gl::enableAlphaBlending(true);
@@ -42,8 +46,18 @@ void Nodes_BoostApp::update() {
 
 void Nodes_BoostApp::draw() {
 
-	gl::clear(Color::white());
+	gl::clear(Color("lightgrey"));
 	mNodes.draw();
+
+
+
+	gui->draw();
+
+
+	
+
+
+
 
 	}
 void Nodes_BoostApp::keyUp(KeyEvent event) {
